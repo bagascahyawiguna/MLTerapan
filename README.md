@@ -181,13 +181,13 @@ Pada proyek ini, tujuan utama adalah memprediksi nilai tukar USD ke IDR sebagai 
 
 Model dievaluasi menggunakan data uji (test set), dan berikut adalah hasil evaluasi dari model LSTM yang digunakan dalam proyek ini:
 
-| Metrik | Hasil |
-| ------ | ----- |
-| MAE    | 65,49 |
-| RMSE   | 92,24 |
-| MAPE   | 0,43% |
-
-### Interpretasi
+|    Model    |     MAE     |     RMSE    |    MAPE   |
+| ----------- | ----------- | ----------- | --------- |
+| LSTM        | 65.486293   | 92.236954   | 0.432285  |
+| ARIMA       | 1644.529932 | 1798.863891 | 11.139310 |
+| ARIMA-GARCH | 1644.529932 | 1798.863891 | 11.139310 |
+| SARIMA      | 2212.802759 | 2260.489106 | 14.816056 |
+### Interpretasi Best Model
 
 * **MAE sebesar 65,49 Rupiah** menunjukkan bahwa rata-rata prediksi hanya meleset sekitar 65 Rupiah dari nilai sebenarnya, yang tergolong sangat rendah untuk data nilai tukar dengan kisaran puluhan ribu.
 * **RMSE sebesar 92,24 Rupiah** mengindikasikan tidak ada kesalahan besar (outlier) yang signifikan karena nilainya masih relatif rendah.
