@@ -1,4 +1,4 @@
-# Laporan Proyek Machine Learning - Nama Anda
+# Laporan Proyek Machine Learning Predictive Analythic Nilai Tukar Mata Uang USD to IDR - Bagas Cahyawiguna
 
 ## Domain Proyek
 
