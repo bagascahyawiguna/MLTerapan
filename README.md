@@ -1,4 +1,4 @@
-# Laporan Proyek Machine Learning Predictive Analythic Nilai Tukar Mata Uang USD to IDR - Bagas Cahyawiguna
+# Laporan Proyek Machine Learning Predictive Analythic Nilai Tukar Mata Uang USD to IDR (Time Series / Forecasting) - Bagas Cahyawiguna
 
 ## Domain Proyek
 
