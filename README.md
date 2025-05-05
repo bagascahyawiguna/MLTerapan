@@ -47,7 +47,7 @@ Proyek ini bertujuan untuk mengembangkan model machine learning yang mampu mempr
 
 ## Data Understanding
 
-Data yang digunakan dalam proyek ini diperoleh dari Yahoo Finance dengan simbol **USDIDR=X**, yang merepresentasikan nilai tukar harian mata uang USD terhadap IDR. Dataset ini mencakup periode historis dari tahun 2008 hingga 2024.
+Data yang digunakan dalam proyek ini diperoleh dari Yahoo Finance dengan simbol **USDIDR=X**, yang merepresentasikan nilai tukar harian mata uang USD terhadap IDR. Dataset ini mencakup periode historis dari tahun 2001 hingga 2025, dengan total data yang didapatkan sebanyak **6010** data, 5 kolom **Index**, dan 1 Kolom khusus **MultiIndex**. Data ini cukup bersih tanpa adanya Missing Values tetapi terdapat **6 Duplicated data** dengan **2 Outliers** yang masih layak untuk dibersihkan melalui tahap ***Preparation***.
 
 Sumber data: https://finance.yahoo.com/quote/USDIDR=X/history
 
@@ -65,7 +65,7 @@ Dataset ini diunduh dalam format CSV dan mencakup kolom-kolom berikut:
 ### Exploratory Data Analysis (EDA)
 
 * Visualisasi tren nilai tukar menunjukkan adanya **pola naik-turun musiman** serta **volatilitas tinggi** dalam beberapa periode krisis keuangan.
-* Distribusi nilai tukar bersifat **non-normal**, dengan beberapa **outlier** signifikan.
+* Distribusi nilai tukar bersifat **non-normal**, dengan **2 outlier** signifikan.
 * Plot autokorelasi (ACF) dan partial autocorrelation (PACF) dilakukan untuk mengidentifikasi **orde AR dan MA** pada model ARIMA.
 * Uji stasioneritas dilakukan menggunakan **Augmented Dickey-Fuller (ADF)** untuk memastikan apakah data perlu di-differencing.
 
@@ -73,32 +73,40 @@ Dataset ini diunduh dalam format CSV dan mencakup kolom-kolom berikut:
 
 Tahapan ini dilakukan untuk menyiapkan data agar dapat digunakan oleh model time series dan deep learning. Data preparation dilakukan secara berurutan sebagai berikut:
 
-### 1. **Handling Missing Values & Outliers**
+### 1. **Drop Unused Column 'Volume'**
 
-* Tidak ditemukan missing values pada kolom harga (Open, High, Low, Close).
-* Ditemukannya 2 outliers, strategi yang dilakukan adalah menghapus 2 outliers tersebut karena dengan jumlah data yang banyak (6000an data), dibanding 2 outliers yang dihapus mungkin tidak akan berpengaruh secara signifikan
+* Kolom volume tidak akan digunakan untuk prediksi nilai tukar mata uang karena memiliki nilai yang selalu 0 pada keseluruhan datanya. Kolom volume biasanya menunjukkan jumlah transaksi yang terjadi dalam satu periode waktu tertentu (biasanya harian) yang berarti kolom tersebut biasa digunakan untuk melihat transaksi saham dan forex.
+  
+### 2. **Handling Missing Values & Duplicated Data**
 
-### 2. **Fokus pada Kolom 'Close'**
+* **Tidak ditemukan missing values** pada kolom harga (Open, High, Low, Close).
+* **Terdapat 6 duplikasi data**, strategi yang dilakukan adalah **menghapus data yang terduplikasi** tersebut.
+
+### 3. **Fokus pada Kolom 'Close'**
 
 * Model prediksi difokuskan untuk memprediksi nilai **penutupan (Close)**.
 * Kolom-kolom lain seperti `Open`, `High`, dan `Low` tidak digunakan agar model tetap sederhana dan fokus.
 
-### 3. **Feature Engineering untuk Model Statistik**
+### 4. **Handling Outliers**
+
+* **Ditemukannya 2 outliers**, strategi yang dilakukan adalah **menghapus 2 outliers** tersebut karena dengan jumlah data yang banyak (6000an data), dibanding 2 outliers yang dihapus mungkin tidak akan berpengaruh secara signifikan.
+
+### 5. **Feature Engineering untuk Model Statistik**
 
 * Dilakukan **differencing** pada data `Close` untuk menjadikan data stasioner (khususnya untuk model ARIMA/SARIMA).
 * Ditambahkan **lag features** seperti nilai tukar hari sebelumnya (lag-1, lag-2, dst.) untuk input ke model prediktif tradisional.
 
-### 4. **Normalisasi Data untuk LSTM**
+### 6. **Normalisasi Data untuk LSTM**
 
 * Untuk model LSTM, data `Close` dinormalisasi menggunakan **MinMaxScaler** ke rentang [0, 1] agar jaringan saraf dapat belajar secara efektif.
 * Setelah prediksi, hasil dipetakan kembali ke skala asli dengan **inverse transform**.
 
-### 5. **Data Splitting**
+### 7. **Data Splitting**
 
 * Dataset dibagi menjadi **train dan test set** secara **chronological split** (bukan random), agar urutan waktu tetap terjaga.
 * Proporsi umum: sekitar 80% untuk pelatihan dan 20% untuk pengujian.
 
-### 6. **Reshaping untuk LSTM**
+### 8. **Reshaping untuk LSTM**
 
 * Data input untuk LSTM direstrukturisasi ke dalam bentuk **[samples, timesteps, features]**, sesuai dengan arsitektur input RNN. Dimana:
     * samples = total sample training/test
@@ -111,6 +119,20 @@ Untuk memprediksi nilai tukar USD ke IDR, beberapa algoritma pemodelan deret wak
 
 ### 1. **ARIMA (AutoRegressive Integrated Moving Average)**
 
+**Cara Kerja Model**: ARIMA adalah model time series yang terdiri dari tiga komponen utama:
+* AR (AutoRegressive): prediksi masa depan didasarkan pada observasi masa lalu (p lag sebelumnya).
+* I (Integrated): jumlah diferensiasi yang dilakukan untuk membuat data stasioner (d).
+* MA (Moving Average): prediksi berdasarkan kesalahan residu dari model sebelumnya (q).
+
+ARIMA bekerja dengan mengubah data menjadi stasioner (melalui differencing), lalu membangun model berdasarkan korelasi antara nilai saat ini dan masa lalu serta kesalahan masa lalu.
+
+Parameter yang Digunakan:
+* p: jumlah lag pada komponen AR
+* d: orde differencing
+* q: jumlah lag pada komponen MA
+
+Model dipilih menggunakan plot ACF, PACF, dan bantuan fungsi auto_arima
+
 * **ARIMA(p,d,q)** digunakan sebagai baseline model.
 * Parameter ditentukan berdasarkan ACF/PACF plot dan auto_arima.
 * Model ini cukup baik untuk data stasioner dan linear.
@@ -118,12 +140,30 @@ Untuk memprediksi nilai tukar USD ke IDR, beberapa algoritma pemodelan deret wak
 
 ### 2. **SARIMA (Seasonal ARIMA)**
 
+**Cara Kerja Model**: SARIMA adalah perluasan dari ARIMA yang menambahkan komponen musiman, cocok untuk data yang memiliki pola musiman (misalnya pola bulanan atau tahunan).
+
+Struktur SARIMA:
+
+**SARIMA(p,d,q)(P,D,Q,s)**
+* (p,d,q): komponen ARIMA biasa.
+* (P,D,Q): komponen musiman.
+* s: panjang siklus musiman (season / misal s=12 untuk bulanan dalam 1 tahun).
+
+SARIMA memperhitungkan autokorelasi jangka pendek dan musiman sekaligus.
+
 * Menambahkan komponen musiman `(P,D,Q,s)` ke ARIMA untuk menangani pola musiman (season).
 * Digunakan saat pola musiman tahunan atau bulanan teridentifikasi dari data tukar.
 * Lebih kompleks dibanding ARIMA biasa, tetapi dapat memberikan hasil lebih stabil untuk data musiman.
 
 ### 3. **ARIMA-GARCH**
 
+**Cara Kerja Model**: ARIMA-GARCH adalah model hybrid yang digunakan untuk data finansial yang menunjukkan volatilitas tinggi atau heteroskedastisitas.
+* **Langkah 1**: Model ARIMA digunakan untuk memodelkan tren data dan menghilangkan autokorelasi.
+* **Langkah 2**: Sisa error (residual) dari ARIMA sering kali tidak white noise, melainkan memiliki volatilitas. Oleh karena itu, GARCH (Generalized Autoregressive Conditional Heteroskedasticity) digunakan untuk memodelkan variansi residual tersebut.
+
+GARCH dapat menangkap fluktuasi besar (volatilitas) yang tidak bisa ditangani ARIMA sendiri.
+
+* Parameter: ARIMA: p, d, q dan GARCH: (p, q): jumlah lag dari variansi sebelumnya dan error sebelumnya
 * Kombinasi ARIMA (untuk memodelkan tren) dan GARCH (untuk memodelkan volatilitas/residual).
 * ARIMA digunakan terlebih dahulu untuk menghilangkan autokorelasi.
 * Residual dari ARIMA kemudian dimodelkan dengan GARCH untuk menangkap heteroskedastisitas (volatilitas tidak konstan).
@@ -131,11 +171,26 @@ Untuk memprediksi nilai tukar USD ke IDR, beberapa algoritma pemodelan deret wak
 
 ### 4. **LSTM (Long Short-Term Memory Neural Network)**
 
-* Merupakan model RNN yang dapat mengingat pola jangka panjang.
-* Menggunakan data dengan input sequence sepanjang 30 hari sebelumnya untuk memprediksi hari berikutnya.
-* Data dinormalisasi ke skala [0, 1] sebelum dilatih.
-* Arsitektur terdiri dari 1 layer LSTM dengan 50 unit dan 1 layer Dense sebagai output.
-* Menggunakan EarlyStopping untuk mencegah overfitting.
+**Cara Kerja Model**: LSTM adalah jenis Recurrent Neural Network (RNN) yang sangat efektif untuk data time series, karena mampu mengingat informasi jangka panjang melalui arsitektur memori internalnya (cell state dan gates).
+
+Komponen utama LSTM:
+* Forget Gate: memutuskan informasi lama yang perlu dibuang.
+* Input Gate: memutuskan informasi baru yang akan disimpan.
+* Output Gate: menentukan output dari unit LSTM.
+
+LSTM sangat cocok untuk mempelajari pola jangka panjang dalam data sekuensial seperti nilai tukar harian.
+
+**Arsitektur Model**:
+* Input sequence: Menggunakan data dengan input sequence sepanjang **30 hari sebelumnya** untuk memprediksi hari berikutnya.
+* Output: prediksi 1 hari ke depan
+  
+**Layer**:
+* 1 LSTM layer dengan 50 unit
+* 1 Dense layer sebagai output
+* Normalisasi input dengan MinMaxScaler (rentang 0–1)
+* Optimizer: Adam
+* Loss function: Mean Squared Error (MSE)
+* Callbacks: EarlyStopping (patience=5) untuk mencegah overfitting.
 
 ### Tuning dan Pemilihan Model
 
@@ -192,6 +247,15 @@ Model dievaluasi menggunakan data uji (test set), dan berikut adalah hasil evalu
 * **MAE sebesar 65,49 Rupiah** menunjukkan bahwa rata-rata prediksi hanya meleset sekitar 65 Rupiah dari nilai sebenarnya, yang tergolong sangat rendah untuk data nilai tukar dengan kisaran puluhan ribu.
 * **RMSE sebesar 92,24 Rupiah** mengindikasikan tidak ada kesalahan besar (outlier) yang signifikan karena nilainya masih relatif rendah.
 * **MAPE sebesar 0,43%** menunjukkan bahwa model memiliki tingkat kesalahan prediksi yang sangat kecil jika dibandingkan dengan nilai tukar aktual, menandakan model sangat andal dalam konteks ini.
+
+**Apakah model menjawab problem statements?**
+* Model LSTM yang dikembangkan berhasil menjawab permasalahan fluktuasi tinggi pada nilai tukar dengan memberikan prediksi jangka pendek yang akurat (MAPE < 0.5%).
+
+**Apakah goals tercapai?**
+* Tujuan untuk membangun model prediktif berbasis data tercapai dengan model LSTM sebagai hasil terbaik (MAE rendah, RMSE rendah).
+
+**Apakah solusi berdampak?**
+* Model ini dapat digunakan oleh investor dan pengambil kebijakan sebagai alat bantu prediktif untuk merencanakan strategi finansial, mengelola risiko, atau menyesuaikan keputusan ekonomi terhadap potensi perubahan nilai tukar.
 
 Dengan hasil ini, model **LSTM** terbukti memiliki performa prediksi yang sangat baik dalam memodelkan dan meramalkan nilai tukar USD ke IDR, menjadikannya solusi utama dalam proyek ini.
 
