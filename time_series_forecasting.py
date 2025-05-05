@@ -59,7 +59,9 @@ data.to_csv('usd_to_idr.csv')
 # Tampilkan data awal
 data
 
-"""# **Exploratory Data Analysis**
+"""Terdapat 6010 data (baris), dengan 5 kolom (Close, High, Low, Open, dan Volume) serta 1 kolom DatetimeIndex (date)
+
+# **Exploratory Data Analysis**
 
 ## **Deskripsi Variabel**
 
@@ -93,22 +95,30 @@ data.describe()
 * Max adalah nilai maksimum.
 
 ## **Menangani Duplikasi dan Missing Values**
+
+### **Drop Unused Column 'Volume'**
 """
 
 # menghapus kolom yang memiliki nilai null seluruhnya dan kolomnya tidak akan digunakan
 data.drop(columns=['Volume'], inplace=True)
+
+"""### **Drop Duplicated Data**"""
 
 print(data.columns)
 
 print("Missing values:", data.isnull().sum())
 print("Duplikat:", data.duplicated().sum())
 
+"""Tidak ada **missing values** tetapi terdapat **duplikasi** sebanyak 6 data yang terduplikat"""
+
 # Menghapus duplikat berdasarkan semua kolom
 data_cleaned = data[~data.duplicated()]
 
 print("Duplikat setelah dibersihkan:", data_cleaned.duplicated().sum())
 
-"""Set Kolom 'Close' sebagai Target dan Sederhanakan Kolom
+"""### **Set 'Close' Column as Target Column**
+
+Set Kolom 'Close' sebagai Target dan Sederhanakan Kolom
 
 Karena kita akan melakukan time series forecasting, kita cukup menggunakan satu kolom utama, yaitu Close (nilai tukar akhir per hari). Kita akan ubah multi-index menjadi kolom biasa
 """
@@ -124,9 +134,14 @@ data_ts.set_index('Tanggal', inplace=True)
 
 data_ts.head()
 
-"""## **Visualisasi**"""
+"""## **Visualisasi**
+
+### **Boxplot Check to detect outliers**
+"""
 
 sns.boxplot(x=data_ts['Close'])
+
+"""### **Line chart Check to detect outliers**"""
 
 import matplotlib.pyplot as plt
 
@@ -172,7 +187,12 @@ plt.legend()
 plt.grid(True)
 plt.show()
 
-# Hapus data outlier dari data_ts
+"""Terlihat terdapat **2 Outlier** pada kisaran tahun 2011-2012
+
+### **Drop/Delete Outliers**
+"""
+
+# Hapus data outlier dari data_ts dan menyalin ke dataframe baru 'data_ts_cleaned'
 data_ts_cleaned = data_outlier[~data_outlier['Outlier']].copy()
 
 plt.figure(figsize=(15, 5))
