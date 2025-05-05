@@ -234,6 +234,16 @@ Pada proyek ini, tujuan utama adalah memprediksi nilai tukar USD ke IDR sebagai 
 
 ### Hasil Evaluasi
 
+Nilai tukar USD/IDR adalah salah satu indikator ekonomi yang sangat berpengaruh bagi pelaku bisnis, investor, pengambil kebijakan, dan perusahaan yang bergerak dalam ekspor/impor. Fluktuasi nilai tukar yang tidak menentu dapat menyebabkan **risiko kerugian finansial** jika tidak dapat diprediksi dengan akurat.
+
+Dengan membangun model prediksi nilai tukar berbasis data historis, kita memberikan:
+
+* **Alat bantu keputusan** bagi pemangku kepentingan,
+* **Sinyal awal perubahan kurs**, dan
+* **Strategi mitigasi risiko** seperti lindung nilai (hedging) yang lebih tepat waktu.
+
+Evaluasi model prediksi ini **berdampak langsung terhadap kepercayaan** pada sistem dan manfaatnya dalam praktik nyata.
+
 Model dievaluasi menggunakan data uji (test set), dan berikut adalah hasil evaluasi dari model LSTM yang digunakan dalam proyek ini:
 
 |    Model    |     MAE     |     RMSE    |    MAPE   |
@@ -248,15 +258,44 @@ Model dievaluasi menggunakan data uji (test set), dan berikut adalah hasil evalu
 * **RMSE sebesar 92,24 Rupiah** mengindikasikan tidak ada kesalahan besar (outlier) yang signifikan karena nilainya masih relatif rendah.
 * **MAPE sebesar 0,43%** menunjukkan bahwa model memiliki tingkat kesalahan prediksi yang sangat kecil jika dibandingkan dengan nilai tukar aktual, menandakan model sangat andal dalam konteks ini.
 
-**Apakah model menjawab problem statements?**
-* Model LSTM yang dikembangkan berhasil menjawab permasalahan fluktuasi tinggi pada nilai tukar dengan memberikan prediksi jangka pendek yang akurat (MAPE < 0.5%).
+### **Apakah Model Menjawab Problem Statements?**
 
-**Apakah goals tercapai?**
-* Tujuan untuk membangun model prediktif berbasis data tercapai dengan model LSTM sebagai hasil terbaik (MAE rendah, RMSE rendah).
+#### 1. **Nilai tukar USD terhadap IDR memiliki fluktuasi tinggi dan sulit diprediksi secara akurat dengan metode tradisional.**
 
-**Apakah solusi berdampak?**
-* Model ini dapat digunakan oleh investor dan pengambil kebijakan sebagai alat bantu prediktif untuk merencanakan strategi finansial, mengelola risiko, atau menyesuaikan keputusan ekonomi terhadap potensi perubahan nilai tukar.
+Model seperti LSTM terbukti memberikan prediksi yang **lebih akurat daripada metode tradisional (ARIMA)**, terutama dalam menangkap fluktuasi dan volatilitas data keuangan.
 
+#### 2. **Kurangnya alat prediktif berbasis data untuk estimasi jangka pendek.**
+
+Model yang dibangun mampu memproyeksikan nilai tukar dalam **jangka pendek (misal 7 hari ke depan)**. Dengan evaluasi performa yang baik, model ini bisa diintegrasikan ke dalam dashboard atau sistem prediksi real-time.
+
+#### 3. **Diperlukan model machine learning yang belajar dari data historis.**
+
+LSTM merupakan model deep learning yang **belajar dari pola data historis** terbukti cocok dan efektif dalam konteks ini.
+
+
+### **Apakah Model Berhasil Mencapai Goals?**
+
+1. **Menganalisis data historis nilai tukar untuk menemukan pola.**
+   **Tercapai** melalui eksplorasi awal, ACF/PACF (untuk ARIMA), analisis musiman, dan analisis volatilitas (untuk GARCH).
+
+2. **Membangun model prediktif berbasis machine learning.**
+   **Tercapai** dengan pengembangan 4 model: ARIMA, SARIMA, ARIMA-GARCH, dan LSTM.
+
+3. **Mengevaluasi model dengan metrik yang sesuai.**
+   **Tercapai** dengan perhitungan RMSE dan MAE, serta analisis error plot (misalnya plot residu, error distribusi, dan prediksi vs aktual).
+
+### **Apakah Solusi yang Dirancang Memberikan Dampak?**
+
+* **Pemanfaatan LSTM** memperbaiki akurasi prediksi nilai tukar secara signifikan.
+* Memberikan **alat bantu berbasis data** yang bisa digunakan oleh:
+  * **Perusahaan ekspor-impor** untuk perencanaan biaya,
+  * **Investor** dalam membuat keputusan valas,
+  * **Bank dan lembaga keuangan** untuk manajemen risiko kurs.
+* **Rekomendasi strategi hedging dan timing transaksi** jadi lebih berbasis data, bukan sekadar spekulasi.
+
+### **Kesimpulan Evaluasi:**
+
+Model LSTM terbukti paling efektif dan menjawab kebutuhan bisnis secara menyeluruh, baik dari sisi akurasi maupun nilai praktisnya. Solusi yang dibangun **berdampak nyata terhadap pengambilan keputusan keuangan** dalam konteks fluktuasi nilai tukar.
 Dengan hasil ini, model **LSTM** terbukti memiliki performa prediksi yang sangat baik dalam memodelkan dan meramalkan nilai tukar USD ke IDR, menjadikannya solusi utama dalam proyek ini.
 
 
